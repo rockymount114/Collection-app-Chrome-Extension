@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "Munis Bill Search",
+    "version": "1.0",
+    "description": "Opens and fills Munis bill search from the Collection app",
+    "permissions": [
+        "tabs",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://munisapp.rockymountnc.gov/*",
+        "http://172.20.21.22:8080/*",
+        "http://127.0.0.1:5000/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://munisapp.rockymountnc.gov/*"],
+            "js": ["content.js"],
+            "run_at": "document_idle"
+        }
+    ],
+    "action": {
+        "default_title": "Munis Bill Search"
+    }
+}
