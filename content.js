@@ -1,5 +1,5 @@
-const FIELD_BILL_YEAR   = '#input-w_472';
-const FIELD_BILL_NUMBER = '#input-w_474';
+const FIELD_BILL_YEAR   = 'tcw-text-field[data-aui-name="formonly.billyear"] input';
+const FIELD_BILL_NUMBER = 'tcw-text-field[data-aui-name="formonly.billnumber"] input';
 
 // Inject extension ID into the page so index.js can find it
 const meta = document.createElement('meta');
