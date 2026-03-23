@@ -1,12 +1,6 @@
 const FIELD_BILL_YEAR   = 'tcw-text-field[data-aui-name="formonly.billyear"] input';
 const FIELD_BILL_NUMBER = 'tcw-text-field[data-aui-name="formonly.billnumber"] input';
 
-// Inject extension ID into the page so index.js can find it
-const meta = document.createElement('meta');
-meta.name = 'munis-extension-id';
-meta.content = chrome.runtime.id;
-document.head.appendChild(meta);
-
 function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
 }
