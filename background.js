@@ -1,41 +1,61 @@
-// Listens for messages from your Flask app page (index.js)
-// Opens Munis tab and tells content.js to fill the form
+const MUNIS_URL = 'https://munisapp.rockymountnc.gov/prod/munis/gas/app/ua/r/mugwc/arbilinq';
 
 chrome.runtime.onMessageExternal.addListener(
     function(message, sender, sendResponse) {
         if (message.action !== 'openMunis') return;
 
-        const billNo   = message.billNo;
-        const billYear = message.billYear;
-        const MUNIS_URL = 'https://munisapp.rockymountnc.gov/prod/munis/gas/app/ua/r/mugwc/arbilinq';
+        const billNo   = String(message.billNo);
+        const billYear = String(message.billYear);
 
-        // Check if Munis is already open in a tab
+        // Store in chrome.storage so content.js can pick it up
+        // even if it loads before this message arrives
+        chrome.storage.local.set({ 
+            pendingBillNo:   billNo, 
+            pendingBillYear: billYear,
+            pendingTimestamp: Date.now()
+        });
+
+        // Check if Munis is already open
         chrome.tabs.query({ url: 'https://munisapp.rockymountnc.gov/*' }, function(tabs) {
             if (tabs.length > 0) {
-                // Reuse existing Munis tab
+                // Reuse existing tab — focus it and send fill message
                 const tab = tabs[0];
                 chrome.tabs.update(tab.id, { active: true });
+                chrome.windows.update(tab.windowId, { focused: true });
+
+                // Send message directly — content.js is already running
                 chrome.tabs.sendMessage(tab.id, {
-                    action: 'fillAndSearch',
+                    action:    'fillAndSearch',
                     billNo,
                     billYear
+                }, response => {
+                    // Ignore errors — content.js will also check storage on load
+                    if (chrome.runtime.lastError) {}
                 });
+
             } else {
                 // Open a new Munis tab
                 chrome.tabs.create({ url: MUNIS_URL }, function(tab) {
-                    // Wait for tab to finish loading then fill the form
+                    // Listen for the tab to fully complete loading
                     chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                        if (tabId === tab.id && info.status === 'complete') {
-                            chrome.tabs.onUpdated.removeListener(listener);
-                            // Give Munis SPA a moment to fully render
-                            setTimeout(() => {
-                                chrome.tabs.sendMessage(tab.id, {
-                                    action: 'fillAndSearch',
-                                    billNo,
-                                    billYear
-                                });
-                            }, 3000);
-                        }
+                        if (tabId !== tab.id) return;
+                        if (info.status !== 'complete') return;
+
+                        chrome.tabs.onUpdated.removeListener(listener);
+
+                        // Wait for Munis SPA to render after page complete
+                        // Uses progressive retry — content.js handles the actual waiting
+                        setTimeout(() => {
+                            chrome.tabs.sendMessage(tabId, {
+                                action: 'fillAndSearch',
+                                billNo,
+                                billYear
+                            }, response => {
+                                if (chrome.runtime.lastError) {
+                                    // content.js not ready yet — it will read from storage instead
+                                }
+                            });
+                        }, 2000);
                     });
                 });
             }
