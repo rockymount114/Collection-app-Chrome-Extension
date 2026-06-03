@@ -9,11 +9,17 @@
     ],
     "host_permissions": [
         "https://munisapp.rockymountnc.gov/*",
-        "http://172.20.21.22:8080/*"
+        "http://172.20.21.22:8080/*",
+        "http://localhost:8080/*",
+        "http://127.0.0.1:8080/*",
+        "https://collection.local/*"
     ],
     "externally_connectable": {
         "matches": [
-            "http://172.20.21.22:8080/*"
+            "http://172.20.21.22:8080/*",
+            "http://localhost:8080/*",
+            "http://127.0.0.1:8080/*",
+            "https://collection.local/*"
         ]
     },
     "background": {
@@ -29,7 +35,10 @@
         },
         {
             "matches": [
-                "http://172.20.21.22:8080/*"
+                "http://172.20.21.22:8080/*",
+                "https://collection.local/*",
+                "http://localhost:8080/*",
+                "http://127.0.0.1:8080/*"
             ],
             "js": ["inject_id.js"],
             "run_at": "document_end"
